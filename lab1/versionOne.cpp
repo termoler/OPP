@@ -1,10 +1,9 @@
 #include <iostream>
-#include <array>
 #include <cmath>
 #include <vector>
 #include "mpi.h"
 
-#define N 1000
+#define N 10000
 
 double getNorma(std::vector<double>& value) {
     double norma = 0;
@@ -15,8 +14,8 @@ double getNorma(std::vector<double>& value) {
 std::vector<double> mulMatrixOnVector(const std::vector<double>& matrix, std::vector<double>& y1){
     int sizeMatrix = (int)(matrix.size()/N);
     std::vector<double> x1y1(sizeMatrix, 0);
-    for(size_t i = 0; i < sizeMatrix; i++){
-        for(size_t j = 0; j < N; j++){
+    for(int i = 0; i < sizeMatrix; i++){
+        for(int j = 0; j < N; j++){
             x1y1[i] += matrix[i * N + j] * y1[j];
         }
     }
@@ -30,8 +29,7 @@ std::vector<double> differenceVectors(std::vector<double>& x1, std::vector<doubl
 
 bool conditionStop(std::vector<double>& xNext, std::vector<double>& b){
     double epsilon = 0.00001;
-    double epsilonOpt = epsilon * epsilon * getNorma(b);
-    return getNorma(xNext) < epsilonOpt;
+    return getNorma(xNext) < epsilon * epsilon * getNorma(b);
 }
 
 std::vector<double> getDecision(const std::vector<double>& matrix, std::vector<double>& x,
@@ -40,7 +38,7 @@ std::vector<double> getDecision(const std::vector<double>& matrix, std::vector<d
     std::vector<double> partXNext(sizeMatrix, 0);
     std::vector<double> xNext(N, 0);
     bool flag = false;
-    double tay = 0.001;
+    double tay = 0.00001;
     std::vector<int> displs;
     displs.push_back(0);
     for(int i = 1; i < size; i++){
@@ -56,7 +54,7 @@ std::vector<double> getDecision(const std::vector<double>& matrix, std::vector<d
 
         MPI_Bcast(&flag, 1, MPI_CXX_BOOL, 0, MPI_COMM_WORLD);
         if(flag) break;
-        for (size_t i = 0; i < sizeMatrix; i++) {
+        for (int i = 0; i < sizeMatrix; i++) {
             partXNext[i] = x[i + sum] - tay * partXNext[i];
         }
         MPI_Allgatherv(&partXNext[0], sizeMatrix, MPI_DOUBLE, &xNext[0] , &gatheredNumbers[0], &displs[0] ,MPI_DOUBLE ,MPI_COMM_WORLD);
@@ -78,16 +76,16 @@ int main() {
 //    if(size > N) return 0;
     auto startTime = MPI_Wtime();
 
-    for(size_t i = 0; i < N; i++) if(rank == i % size) count++;
+    for(int i = 0; i < N; i++) if(rank == i % size) count++;
     mat.resize(N * count);
     std::fill(mat.begin(), mat.end(), 1);
     MPI_Allgather(&count, 1, MPI_INT, gatheredNumbers.data(), 1, MPI_INT, MPI_COMM_WORLD);
 
     int sum = 0;
-    for(size_t j = 0; j < rank; j ++){
+    for(int j = 0; j < rank; j ++){
         sum += gatheredNumbers[j];
     }
-    for(size_t i = 0; i < count; i++){
+    for(int i = 0; i < count; i++){
         mat[i * N + counterTwo + sum] = 2;
         counterTwo++;
     }

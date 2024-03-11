@@ -2,7 +2,7 @@
 #include <vector>
 
 //#define N 40000
-size_t N = 10000;
+int N = 10000;
 
 double getNorma(std::vector<double>& value) {
     double norma = 0;
@@ -13,8 +13,8 @@ double getNorma(std::vector<double>& value) {
 std::vector<double> mulMatrixOnVector(const std::vector<double>& matrix, std::vector<double>& y1){
     int sizeMatrix = (int)(matrix.size()/N);
     std::vector<double> x1y1(sizeMatrix, 0);
-    for(size_t i = 0; i < sizeMatrix; i++){
-        for(size_t j = 0; j < N; j++){
+    for(int i = 0; i < sizeMatrix; i++){
+        for(int j = 0; j < N; j++){
             x1y1[i] += matrix[i * N + j] * y1[j];
         }
     }
@@ -42,7 +42,7 @@ std::vector<double> getDecision(const std::vector<double>& matrix, std::vector<d
         xNext = mulMatrixOnVector(matrix, x);
         xNext = differenceVectors(xNext, b);
         flag = conditionStop(xNext, b);
-        for (size_t i = 0; i < sizeMatrix; i++) {
+        for (int i = 0; i < sizeMatrix; i++) {
             xNext[i] = x[i] - tay * xNext[i];
         }
         x = xNext;
@@ -56,7 +56,7 @@ int main() {
     std::vector<double> b(N, N + 1);
     std::vector<double> x(N, 0);
 
-    for(size_t j = 0; j < matrix.size() / N; j ++) {
+    for(int j = 0; j < (int)matrix.size() / N; j ++) {
         matrix[j * N + j] = 2;
     }
 
